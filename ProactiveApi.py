@@ -19,7 +19,7 @@ class ProactiveApi:
         #self.host = "http://localhost:3979/api/ProactiveApi"
 
     def checkUserActivity(self):
-        for user in self.user_col.find({"conversationReference.ChannelId": "skype"}):
+        for user in self.user_col.find({"conversationReference.ChannelId": "emulator"}):
             interest = user["interests"]
             if "Computers" in interest or "Video Games" in interest:
                 interest.append("Technology")
@@ -52,30 +52,27 @@ class ProactiveApi:
                     }
                     print("Posting", payload)
                     requests.post(self.host, json=payload, headers={"Content-Type": "application/json"})
-                    return
-                random.shuffle(courses)
-                for course in courses:
-                    if course["topic"] in interest or course["subTopic"] in interest:
+                else:
+                    random.shuffle(courses)
+                    found = False
+                    for course in courses:
+                        if course["topic"] in interest or course["subTopic"] in interest:
+                            payload = {
+                                "Text": course["subTopic"] + "$" + course["subTopicArabic"] + "$" + course["topic"] + "$" + course["topicArabic"],
+                                "From": {"id": user["User_id"]}
+                            }
+                            found = True
+
+                    # if none of the courses match the user interests then pass the failure payload to the bot
+                    if not found:
                         payload = {
-                            "Text": course["subTopic"] + "$" + course["subTopicArabic"] + "$" + course["topic"] + "$" + course["topicArabic"],
+                            "Text": "fail",
                             "From": {"id": user["User_id"]}
                         }
-                        print("Posting", payload)
-                        requests.post(self.host, json=payload, headers={"Content-Type": "application/json"})
-
-                        return
-
-                # if none of the courses match the user interests then pass the failure payload to the bot
-                payload = {
-                    "Text": "fail",
-                    "From": {"id": user["User_id"]}
-                }
-                print("Posting", payload)
-                requests.post(self.host, json=payload, headers={"Content-Type": "application/json"})
-                return
+                    print("Posting", payload)
+                    requests.post(self.host, json=payload, headers={"Content-Type": "application/json"})
 
             elif user["lastNotified"] < user["Notification"]:
-
                 self.user_col.update({"User_id": user["User_id"]}, {"$inc": {"lastNotified": 1}})
 
     def getnewCourses(self):
