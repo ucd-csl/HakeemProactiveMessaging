@@ -8,18 +8,18 @@ import json
 
 
 class ProactiveApi:
-    uri = "" #Insert Mongo/CosmosDB pathway here
+    uri = "***REMOVED***" #Insert Mongo/CosmosDB pathway here
 
     def __init__(self):
         self.client = pm.MongoClient(self.uri)
         self.db = self.client.hakeemdb
         self.user_col = self.db.users
         self.course_col = self.db.hakeem_course_list
-        self.host = "" #Insert API URL here
+        self.host = "***REMOVED***" #Insert API URL here
         #self.host = "http://localhost:3979/api/ProactiveApi"
 
     def checkUserActivity(self):
-        for user in self.user_col.find({"conversationReference.ChannelId": "emulator"}):
+        for user in self.user_col.find({"conversationReference.ChannelId": "skype"}):
             interest = user["interests"]
             if "Computers" in interest or "Video Games" in interest:
                 interest.append("Technology")
