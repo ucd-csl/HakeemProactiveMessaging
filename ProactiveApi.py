@@ -8,14 +8,14 @@ import json
 
 
 class ProactiveApi:
-    uri = "mongodb://hakeemdb:ESmBikpcBDGdwAJ3NEpRhmOIlyVhJ1TKzbllvXm8GdDWYyBYrAGsa0Tp19MB0YoWVQAyW3522vGAcN3C72N2Rg==@hakeemdb.documents.azure.com:10255/?ssl=true&replicaSet=globaldb" #Insert Mongo/CosmosDB pathway here
+    uri = "" #Insert Mongo/CosmosDB pathway here
 
     def __init__(self):
         self.client = pm.MongoClient(self.uri)
         self.db = self.client.hakeemdb
         self.user_col = self.db.users
         self.course_col = self.db.hakeem_course_list
-        self.host = "https://testsloteurope.azurewebsites.net/api/ProactiveApi" #Insert API URL here
+        self.host = "" #Insert API URL here
         #self.host = "http://localhost:3979/api/ProactiveApi"
 
     def checkUserActivity(self):
@@ -39,7 +39,8 @@ class ProactiveApi:
             # if user hasn't been active in a year, delete their user profile
             if time_since.days >= 365:
                 self.user_col.delete_one({"User_id": user["User_id"]})
-
+            elif user["Notification"] == 0:
+                print("Notifications off")
             # if user has been notified in a while and hasn't been talking to the bot in the past 10 minutes
             elif user["lastNotified"] >= user["Notification"] and time_since.total_seconds() >= 600:
                 self.user_col.find_one_and_update({"User_id": user["User_id"]}, {"$set": {"lastNotified": 0}})
@@ -52,6 +53,7 @@ class ProactiveApi:
                     }
                     print("Posting", payload)
                     requests.post(self.host, json=payload, headers={"Content-Type": "application/json"})
+
                 else:
                     random.shuffle(courses)
                     found = False
@@ -71,6 +73,7 @@ class ProactiveApi:
                         }
                     print("Posting", payload)
                     requests.post(self.host, json=payload, headers={"Content-Type": "application/json"})
+
 
             elif user["lastNotified"] < user["Notification"]:
                 self.user_col.update({"User_id": user["User_id"]}, {"$inc": {"lastNotified": 1}})
