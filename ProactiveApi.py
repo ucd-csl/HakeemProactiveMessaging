@@ -38,12 +38,12 @@ class ProactiveApi:
             time_since = datetime.datetime.utcnow() - last
             # if user hasn't been active in a year, delete their user profile
             if time_since.days >= 365:
-                self.user_col.delete_one({"User_id": user["User_id"]})
+                self.user_col.delete_one({"_id": user["_id"]})
             elif user["Notification"] == 0:
                 print("Notifications off")
             # if user has been notified in a while and hasn't been talking to the bot in the past 10 minutes
             elif user["lastNotified"] >= user["Notification"] and time_since.total_seconds() >= 600:
-                self.user_col.find_one_and_update({"User_id": user["User_id"]}, {"$set": {"lastNotified": 0}})
+                self.user_col.find_one_and_update({"_id": user["_id"]}, {"$set": {"lastNotified": 1}})
                 courses = list(self.getnewCourses())
                 if len(courses) == 0:
                     # if no new courses could be found than send fail message to bot and exit
@@ -76,7 +76,7 @@ class ProactiveApi:
 
 
             elif user["lastNotified"] < user["Notification"]:
-                self.user_col.update({"User_id": user["User_id"]}, {"$inc": {"lastNotified": 1}})
+                self.user_col.update({"_id": user["_id"]}, {"$inc": {"lastNotified": 1}})
 
     def getnewCourses(self):
         course_len = 0
